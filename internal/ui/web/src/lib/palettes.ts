@@ -26,6 +26,10 @@ export interface Palette {
   // macOS does, which is the one desktop that tints its own chrome, so the rest
   // leave it unset and keep the white app.css falls back to.
   chromeLight?: string;
+  // What the chrome turns while the window has focus, the way Breeze lifts a
+  // focused window's header. Only a live Plasma scheme publishes them.
+  chromeActive?: string;
+  chromeLightActive?: string;
   source: 'builtin' | 'user' | 'desktop';
 }
 
@@ -42,6 +46,8 @@ export interface PaletteFile {
   border?: string;
   muted?: string;
   chrome_light?: string;
+  chrome_active?: string;
+  chrome_light_active?: string;
   // Set when the theme came from somewhere other than a file the user can edit,
   // which is what keeps a remove button off it.
   source?: string;
@@ -58,9 +64,10 @@ export const DEFAULT_PALETTE_ID = 'lerd';
 // built-in #ff2d20 and its #e02419 hover.
 const HOVER_STEP = 0.12;
 
-// lerd, muted and Ocean are the dashboard's own. The editor schemes are their
-// published palettes. The desktop ones are read
-// from what those desktops actually ship, not from memory of them: Breeze from
+// lerd, muted and Ocean are the dashboard's own, and the desktop ones follow
+// lerd's straight away since they are the likeliest pick after it. The editor
+// schemes are their published palettes. The desktop ones are read from what
+// those desktops actually ship, not from memory of them: Breeze from
 // Plasma 6.7's BreezeDark.colors, Adwaita from libadwaita 1.9's named colours,
 // macOS from Apple's documented system blue and window background. All three
 // have been darkened since the values most write-ups still quote. Their light
@@ -78,6 +85,48 @@ export const BUILTIN_PALETTES: Palette[] = [
     card: '#161616',
     border: '#262626',
     muted: '#404040',
+    source: 'builtin'
+  },
+  {
+    id: 'breeze',
+    name: 'Breeze',
+    accent: '#17698f',
+    accentHover: '#12556f',
+    accentDark: '#3daee9',
+    accentHoverDark: '#5fbdee',
+    chromeLight: '#eff0f1',
+    bg: '#141618',
+    card: '#202326',
+    border: '#292c30',
+    muted: '#3a3f45',
+    source: 'builtin'
+  },
+  {
+    id: 'adwaita',
+    name: 'Adwaita',
+    accent: '#1c71d8',
+    accentHover: '#1a5fb4',
+    accentDark: '#3584e4',
+    accentHoverDark: '#62a0ea',
+    chromeLight: '#ebebed',
+    bg: '#1d1d20',
+    card: '#252529',
+    border: '#2e2e32',
+    muted: '#39393d',
+    source: 'builtin'
+  },
+  {
+    id: 'macos',
+    name: 'macOS',
+    accent: '#0066cc',
+    accentHover: '#0052a3',
+    accentDark: '#0a84ff',
+    accentHoverDark: '#3d9dff',
+    bg: '#1e1e1e',
+    card: '#282828',
+    border: '#3a3a3a',
+    muted: '#4a4a4a',
+    chromeLight: '#f3f4f6',
     source: 'builtin'
   },
   {
@@ -183,48 +232,6 @@ export const BUILTIN_PALETTES: Palette[] = [
     border: '#3c3836',
     muted: '#928374',
     source: 'builtin'
-  },
-  {
-    id: 'breeze',
-    name: 'Breeze',
-    accent: '#17698f',
-    accentHover: '#12556f',
-    accentDark: '#3daee9',
-    accentHoverDark: '#5fbdee',
-    chromeLight: '#eff0f1',
-    bg: '#141618',
-    card: '#202326',
-    border: '#292c30',
-    muted: '#3a3f45',
-    source: 'builtin'
-  },
-  {
-    id: 'adwaita',
-    name: 'Adwaita',
-    accent: '#1c71d8',
-    accentHover: '#1a5fb4',
-    accentDark: '#3584e4',
-    accentHoverDark: '#62a0ea',
-    chromeLight: '#ebebed',
-    bg: '#1d1d20',
-    card: '#252529',
-    border: '#2e2e32',
-    muted: '#39393d',
-    source: 'builtin'
-  },
-  {
-    id: 'macos',
-    name: 'macOS',
-    accent: '#0066cc',
-    accentHover: '#0052a3',
-    accentDark: '#0a84ff',
-    accentHoverDark: '#3d9dff',
-    bg: '#1e1e1e',
-    card: '#282828',
-    border: '#3a3a3a',
-    muted: '#4a4a4a',
-    chromeLight: '#f3f4f6',
-    source: 'builtin'
   }
 ];
 
@@ -241,6 +248,8 @@ const DESKTOP_STANDS_IN_FOR: Record<string, string> = {
   gnome: 'adwaita',
   macos: 'macos'
 };
+
+export const SYSTEM_PALETTE_IDS = Object.values(DESKTOP_STANDS_IN_FOR);
 
 // asDesktopStandIn hands a desktop theme the id and the name of the built-in it
 // replaces, so a dashboard already set to that built-in follows the desktop from
@@ -282,6 +291,14 @@ export function chromeBorder(chrome: string): string {
   return toHex(mix(rgb, 0, CHROME_BORDER_STEP));
 }
 
+// headerBorderDark keeps the frame's lines visible on a lifted header. Breeze's
+// focused header is the very tone its borders are drawn in, so while it shows
+// the line steps off it toward white instead.
+function headerBorderDark(header: string, palette: Palette): string {
+  if (header === palette.card) return palette.border;
+  return toHex(mix(parseHex(header)!, 255, CHROME_BORDER_STEP));
+}
+
 export function onAccent(accent: string): string {
   const rgb = parseHex(accent);
   if (!rgb) return '#ffffff';
@@ -310,6 +327,8 @@ export function resolvePalette(file: PaletteFile): Palette | null {
     border: hex(file.border) || DEFAULT_PALETTE.border,
     muted: hex(file.muted) || DEFAULT_PALETTE.muted,
     chromeLight: hex(file.chrome_light) || undefined,
+    chromeActive: hex(file.chrome_active) || undefined,
+    chromeLightActive: hex(file.chrome_light_active) || undefined,
     source: file.source === 'desktop' ? 'desktop' : 'user'
   };
 }
@@ -322,9 +341,12 @@ export function paletteById(palettes: Palette[], id: string): Palette {
 }
 
 // paletteVars maps a theme onto the custom properties app.css declares, picking
-// the tone that reads on the surface the current mode paints.
-export function paletteVars(palette: Palette, dark: boolean): Record<string, string> {
+// the tone that reads on the surface the current mode paints and, for the
+// chrome, whether the window has focus.
+export function paletteVars(palette: Palette, dark: boolean, focused = false): Record<string, string> {
   const accent = dark ? palette.accentDark : palette.accent;
+  const header = (focused && palette.chromeActive) || palette.card;
+  const headerLight = (focused && palette.chromeLightActive) || palette.chromeLight || '#ffffff';
   return {
     '--lerd-accent': accent,
     '--lerd-on-accent': onAccent(accent),
@@ -334,7 +356,12 @@ export function paletteVars(palette: Palette, dark: boolean): Record<string, str
     '--lerd-border': palette.border,
     '--lerd-muted': palette.muted,
     '--lerd-chrome-light': palette.chromeLight || '#ffffff',
-    '--lerd-chrome-border': chromeBorder(palette.chromeLight || '#ffffff')
+    '--lerd-chrome-border': chromeBorder(palette.chromeLight || '#ffffff'),
+    // The header is the rail and the page's top strips, the part of the chrome
+    // that follows focus; the sidebar between them holds still.
+    '--lerd-header': header,
+    '--lerd-header-light': headerLight,
+    '--lerd-header-border': dark ? headerBorderDark(header, palette) : chromeBorder(headerLight)
   };
 }
 

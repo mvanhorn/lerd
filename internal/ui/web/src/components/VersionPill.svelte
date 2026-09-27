@@ -12,7 +12,7 @@
 </script>
 
 <span class="inline-flex items-center gap-2">
-  <ChannelBadge />
+  <ChannelBadge size="md" />
   {#if base}
     <span class="inline-flex items-center gap-1.5 whitespace-nowrap {sizeClass} font-medium rounded-full bg-gray-100 dark:bg-white/5 text-gray-600 dark:text-gray-400 font-mono">v{base}</span>
   {/if}

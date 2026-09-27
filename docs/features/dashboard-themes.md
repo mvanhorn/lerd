@@ -15,6 +15,9 @@ since that follows the room you are sitting in rather than the install.
 | Theme | Accent | Background (dark mode) |
 |---|---|---|
 | `lerd` | the bright brand red | `#0d0d0d` |
+| Breeze | Plasma blue | `#141618` |
+| Adwaita | Adwaita blue | `#1d1d20` |
+| macOS | the system blue | `#1e1e1e` |
 | `muted` | a desaturated brick | `#111113` |
 | Ocean | a calm steel blue | `#0d1418` |
 | Solarized Dark | Solarized blue | `#002b36` |
@@ -23,9 +26,6 @@ since that follows the room you are sitting in rather than the install.
 | Dracula | Dracula purple | `#282a36` |
 | Nord | Nord frost | `#2e3440` |
 | Gruvbox Dark | Gruvbox orange | `#282828` |
-| Breeze | Plasma blue | `#141618` |
-| Adwaita | Adwaita blue | `#1d1d20` |
-| macOS | the system blue | `#1e1e1e` |
 
 `lerd` is the default. `muted` is there for anyone who finds the default red too
 sharp, especially on a bright screen.
@@ -118,6 +118,14 @@ rather than the scheme's name. A light scheme lends one tone instead, the window
 background it tints its own chrome with, which the dashboard puts behind the rail
 and the sidebar in light mode. A stock Plasma that never had an accent picked
 lends the scheme's selection colour instead.
+
+The chrome also follows focus the way Plasma's own windows do. Breeze draws a
+focused window's header in its own tone and an unfocused one in the window
+colour, and the scheme's `[Colors:Header]` group says what that focused tone is.
+While the dashboard window has focus the rail and the page headers take it, in
+dark and light mode alike, and they drop back to the window colour as soon as
+focus moves to another window. The sidebar between them holds still. A scheme
+without a header group, as schemes from before Plasma 6 are, keeps a single tone.
 
 **GNOME** publishes the accent alone, one of the ten libadwaita colours, read
 from `org.gnome.desktop.interface accent-color`. That is all it lends, since the
