@@ -247,7 +247,7 @@ func renderDBEngineRow(eng dbview.Engine, shown, paneW int) string {
 		glyph = failingStyle.Render(glyphFailing)
 		note = failingStyle.Render("unreadable")
 	}
-	return clipLine(" "+glyph+" "+sectionStyle.Render(eng.Service)+"  "+note, paneW)
+	return clipLine(glyph+" "+sectionStyle.Render(eng.Service)+"  "+note, paneW)
 }
 
 // dbNameColWidth aligns the size column across database rows. 22 cells fit a
@@ -255,9 +255,9 @@ func renderDBEngineRow(eng dbview.Engine, shown, paneW int) string {
 const dbNameColWidth = 22
 
 func renderDBRow(selected bool, db dbview.Entry, paneW int) string {
-	prefix := "   "
+	prefix := "  "
 	if selected {
-		prefix = "  " + accentStyle.Render("▸")
+		prefix = accentStyle.Render("▸") + " "
 	}
 	name := padRight(truncatePlain(db.Name, dbNameColWidth), dbNameColWidth)
 	if selected {
@@ -265,7 +265,7 @@ func renderDBRow(selected bool, db dbview.Entry, paneW int) string {
 	}
 	// A row carries the name and size only; snapshots and the folded testing
 	// database belong to the detail pane, where there is room to read them.
-	return clipLine(prefix+" "+name+" "+dimStyle.Render(fmt.Sprintf("%7s", stats.FormatBytes(db.SizeBytes))), paneW)
+	return clipLine(prefix+name+" "+dimStyle.Render(fmt.Sprintf("%7s", stats.FormatBytes(db.SizeBytes))), paneW)
 }
 
 // databaseDetailContentLines renders the right-hand pane on the Databases tab:
